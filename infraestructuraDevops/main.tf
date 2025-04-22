@@ -165,12 +165,12 @@ resource "aws_security_group" "SG-WebLinuxVirginia" {
   name = "SG-Proyect-WebLinuxVirginia"
   description = "Conexión al servidor Linux Web Virginia por SSH desde IPs especificas y acceso a HTTP/HTTPS por internet"
 
-  #Trafico SSH desde IP de Windows Backend
+  #Trafico SSH desde IP de integrantes
   ingress {
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = ["",""] #IP de todos los integrantes
+    cidr_blocks = ["187.138.109.214/32"] #IP de todos los integrantes
   }
 
   #Trafico HTTP desde cualquier IP
@@ -203,12 +203,12 @@ resource "aws_security_group" "SG-WebLinuxOregon" {
   name = "SG-Proyect-WebLinuxOregon"
   description = "Conexión al servidor Linux Web Oregon por SSH desde IPs especificas y acceso a HTTP/HTTPS por internet"
 
-  #Trafico SSH desde IP de Windows Backend
+  #Trafico SSH desde IP de integrantes
   ingress {
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = ["",""] #IP de todos los integrantes
+    cidr_blocks = ["0.0.0.0/0"] #Agregar IP de todos los integrantes
   }
 
   #Trafico HTTP desde cualquier IP
