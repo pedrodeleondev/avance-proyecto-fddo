@@ -37,12 +37,24 @@ button {
     width:50%;
     border-radius: 10px;
 }
+.btns{
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    justify-content: center;
+}
+.btn{
+    margin:5px;
+}
 #agregar {
     font-size:1.2em;
     background-color: #28a745;
 }
+.btnVerde{
+    background-color: #28a745;
+}
 
-#agregar:hover {
+#agregar:hover, .btnVerde:hover {
     background-color: #218838;
 }
 
@@ -54,23 +66,62 @@ button {
     background-color: #0069d9;
 }
 
-#eliminar {
+#eliminar, .btnRojo {
     background-color: #dc3545;
 }
 
-#eliminar:hover {
+#eliminar:hover, .btnRojo:hover {
     background-color: #c82333;
 }
 
 #articulosLista>li {
     font-size:1.2em;
 }
-#articulosLista>li>b {
-    color: yellow;
-}
 #articulosLista>li>.articuloTxt {
     margin-right:1.8em;
 }
+#formModal{
+    width:60em;
+}
+#formContainer {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+    
+}
+
+#tituloModal {
+    color: black;
+    font-weight: 500;
+    font-size: 1.4em;
+}
+
+#formProducto {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+}
+#formProducto > label{
+    color: black;
+}
+#idProducto {
+    color: black;
+}
+
+#nombre {
+    color: black;
+}
+
+#cantidad {
+    color: black;
+}
+
+#precio {
+    color: black;
+}
+
 #creditos{
     width:30%;
     background-color: white;
