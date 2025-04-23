@@ -4,17 +4,14 @@ from urllib.parse import urlparse
 
 app = Flask(__name__)
 
-# ---------- CONEXIÓN DESDE URI ----------
-db_url = 'mysql://root:wyGyirKMoKGNyOjHnwPzxVmnFTVzYsKN@crossover.proxy.rlwy.net:37763/railway'
-parsed_url = urlparse(db_url)
-
+# ------- CONEXIÓN ----------
 def get_connection():
     return pymysql.connect(
-        host=parsed_url.hostname,
-        user=parsed_url.username,
-        password=parsed_url.password,
-        database=parsed_url.path.lstrip('/'),
-        port=parsed_url.port,
+        host="bd-proyect-mysql.cis9zqmovwyf.us-east-1.rds.amazonaws.com",
+        user="admin",
+        password="proyecto98765", 
+        database="proyecto_db",
+        port=3306,
         cursorclass=pymysql.cursors.DictCursor
     )
 
