@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avance del proyecto</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        #formModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #formContainer {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="contenedor">
+        <div class="articulosDiv">
+            <button id="agregar" onclick="abrirFormulario()">Agregar nuevo producto</button>
+            <ul id="articulosLista">
+                {% for p in productos %}
+                <li>
+                    <span class="articuloTxt"><b>ID:</b> {{ p.id }} - <b>Nombre:</b> {{ p.nombre }} - <b>Cantidad:</b>
+                        {{ p.cantidad }} - <b>Precio:</b> ${{ p.precio }}</span>
+                    <button id="editar"
+                        onclick="editarProducto({{ p.id }}, '{{ p.nombre }}', {{ p.cantidad }}, {{ p.precio }})">Editar</button>
+                    <a href="/eliminar/{{ p.id }}"><button id="eliminar">Eliminar</button></a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <span id="creditos">Avance de Proyecto por <b>Pedro De León, Paola Urdiales y Frida Garza</b></span>
+    </div>
+
+    <!-- MODAL -->
+    <div id="formModal">
+        <div id="formContainer">
+            <h3 id="tituloModal">Agregar Producto</h3>
+            <form id="formProducto" method="POST" action="/agregar">
+                <input type="hidden" name="id" id="idProducto">
+                <label>Nombre:</label><input type="text" name="nombre" id="nombre" maxlength="25" required><br>
+                <label>Cantidad:</label><input type="number" name="cantidad" id="cantidad" min="1" max="99" required><br>
+                <label>Precio:</label><input type="number" step="0.01" name="precio" id="precio" min="1" max="99999" required><br><br>
+                <div class="btns">
+                    <button class="btnVerde btn" type="submit">Guardar</button>
+                    <button class="btnRojo btn" type="button" onclick="cerrarFormulario()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function abrirFormulario() {
+            document.getElementById('formProducto').action = "/agregar";
+            document.getElementById('tituloModal').innerText = "Agregar Producto";
+            document.getElementById('formProducto').reset();
+            document.getElementById('formModal').style.display = 'flex';
+        }
+
+        function editarProducto(id, nombre, cantidad, precio) {
+            document.getElementById('formProducto').action = "/editar/" + id;
+            document.getElementById('tituloModal').innerText = "Editar Producto";
+            document.getElementById('nombre').value = nombre;
+            document.getElementById('cantidad').value = cantidad;
+            document.getElementById('precio').value = precio;
+            document.getElementById('formModal').style.display = 'flex';
+        }
+
+        function cerrarFormulario() {
+            document.getElementById('formModal').style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>
