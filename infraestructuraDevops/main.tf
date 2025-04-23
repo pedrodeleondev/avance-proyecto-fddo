@@ -170,7 +170,7 @@ resource "aws_security_group" "SG-WebLinuxVirginia" {
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = ["187.138.109.214/32"] #IP de todos los integrantes
+    cidr_blocks = ["0.0.0.0/0"] #TU IP al final de ella poner un "/32"
   }
 
   #Trafico HTTP desde cualquier IP
@@ -208,7 +208,7 @@ resource "aws_security_group" "SG-WebLinuxOregon" {
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] #Agregar IP de todos los integrantes
+    cidr_blocks = ["0.0.0.0/0"] #TU IP al final de ella poner un "/32"
   }
 
   #Trafico HTTP desde cualquier IP
