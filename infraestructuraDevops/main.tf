@@ -1,41 +1,41 @@
 #Proveedor de nube
 provider "aws" {
-  region = "us-west-2"
+  region = "us-east-1"
 }
 
 #VPC Oregon
-resource "aws_vpc" "vpc_oregon" {
+resource "aws_vpc" "vpc_virginia" {
     cidr_block = "10.0.0.0/16"
     tags = {
-      Name = "VPC Oregon - Proyecto"
+      Name = "VPC Virginia - Proyecto"
     }
 }
 
 #Gateway
-resource "aws_internet_gateway" "igw-oregon" {
-    vpc_id = aws_vpc.vpc_oregon.id
+resource "aws_internet_gateway" "igw-virginia" {
+    vpc_id = aws_vpc.vpc_virginia.id
     tags = {
       Name = "IGW Oregon - Proyecto"
     }
 }
 
 #Subred Publica Oregon Web
-resource "aws_subnet" "subred_publica_oregon_Web" {
-  vpc_id = aws_vpc.vpc_oregon.id
+resource "aws_subnet" "subred_publica_virginia_Web" {
+  vpc_id = aws_vpc.vpc_virginia.id
   cidr_block = "10.0.0.0/24"
-  availability_zone = "us-west-2a"
+  availability_zone = "us-east-1a"
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "Subred Publica Web Oregon - Proyect"
+    Name = "Subred Publica Web Virginia - Proyect"
   }
 }
 
 #Subred Privada Oregon - Backend
-resource "aws_subnet" "subred_privada_oregon_Back" {
-  vpc_id = aws_vpc.vpc_oregon.id
+resource "aws_subnet" "subred_privada_virginia_Back" {
+  vpc_id = aws_vpc.vpc_virginia.id
   cidr_block = "10.0.1.0/24"
-  availability_zone = "us-west-2b"
+  availability_zone = "us-east-1b"
 
  tags = {
     Name = "Subred Privada Backend - Proyect"
@@ -43,10 +43,10 @@ resource "aws_subnet" "subred_privada_oregon_Back" {
 }
 
 #Subred Privada Oregon - Base de datos
-resource "aws_subnet" "subred_privada_oregon_BD" {
-  vpc_id = aws_vpc.vpc_oregon.id
+resource "aws_subnet" "subred_privada_virginia_BD" {
+  vpc_id = aws_vpc.vpc_virginia.id
   cidr_block = "10.0.2.0/24"
-  availability_zone = "us-west-2c"
+  availability_zone = "us-east-1c"
 
  tags = {
     Name = "Subred Privada BD - Proyect"
@@ -67,36 +67,36 @@ resource "aws_db_subnet_group" "db_subnet_group" {
 }
 
 #Tabla de rutas Oregon
-resource "aws_route_table" "tabla_rutas_oregon" {
+resource "aws_route_table" "tabla_rutas_virginia" {
   vpc_id = aws_vpc.vpc_oregon.id
 
   route{
-    cidr_block = "10.0.0.0/0"
+    cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw-oregon.id
   }
 
   tags = {
-    Name = "Tabla Rutas Oregon"
+    Name = "Tabla Rutas Virginia"
   }
 }
-resource "aws_route_table_association" "privada_oregon_Backend" {
-  subnet_id = aws_subnet.subred_privada_oregon_Back.id
-  route_table_id = aws_route_table.tabla_rutas_oregon.id
+resource "aws_route_table_association" "privada_virginia_Backend" {
+  subnet_id = aws_subnet.subred_privada_virginia_Back.id
+  route_table_id = aws_route_table.tabla_rutas_virginia.id
 }
-resource "aws_route_table_association" "privada_oregon_BD" {
-  subnet_id = aws_subnet.subred_privada_oregon_BD.id
-  route_table_id = aws_route_table.tabla_rutas_oregon.id
+resource "aws_route_table_association" "privada_virginia_BD" {
+  subnet_id = aws_subnet.subred_privada_virginia_BD.id
+  route_table_id = aws_route_table.tabla_rutas_virginia.id
 }
-resource "aws_route_table_association" "publica_oregon_Web" {
-  subnet_id = aws_subnet.subred_publica_oregon_Web.id
-  route_table_id = aws_route_table.tabla_rutas_oregon.id
+resource "aws_route_table_association" "publica_virginia_Web" {
+  subnet_id = aws_subnet.subred_publica_virginia_Web.id
+  route_table_id = aws_route_table.tabla_rutas_virginia.id
 } 
 
-#Grupo de seguridad para Servidores Web Linux
-resource "aws_security_group" "SG-WebOregon" {
-  vpc_id = aws_vpc.vpc_oregon.id
-  name = "SG-Proyect-WebOregon"
-  description = "Conexión al servidor Windows Web Oregon por RDP desde IPs especificas y acceso a HTTP/HTTPS por internet"
+#Grupo de seguridad para Servidores Web Windows
+resource "aws_security_group" "SG-WebVirginia" {
+  vpc_id = aws_vpc.vpc_virginia.id
+  name = "SG-Proyect-WebVirginia"
+  description = "Conexión al servidor Windows Web por RDP desde IPs especificas y acceso a HTTP/HTTPS por internet"
 
   #Trafico RDP desde IP de integrantes
   ingress {
@@ -133,16 +133,16 @@ resource "aws_security_group" "SG-WebOregon" {
 
 #Grupo de seguridad para Windows Backend
 resource "aws_security_group" "SG-WindowsBackend" {
-  vpc_id = aws_vpc.vpc_oregon.id
+  vpc_id = aws_vpc.vpc_virginia.id
   name = "SG-WindowsBackend"
   description = "Acceso a Windows Backend desde instancias Web y acceso desde los servicios Web"
 
-  #Trafico RDP mediante IP de Linux Web
+  #Trafico RDP mediante IP de Windows Web
   ingress {
     from_port = 3389
     to_port = 3389
     protocol = "tcp"
-    cidr_blocks = [format("%s/32", aws_instance.instancia_WebOregon.private_ip)]
+    cidr_blocks = [format("%s/32", aws_instance.instancia_WebVirginia.private_ip)]
   }
 
   #Trafico Web mediante grupo de seguridad de Servidores Web
@@ -150,7 +150,7 @@ resource "aws_security_group" "SG-WindowsBackend" {
     from_port = 5000
     to_port = 5000
     protocol = "tcp"
-    security_groups = [aws_security_group.SG-WebOregon.id]
+    security_groups = [aws_security_group.SG-WebVirginia.id]
   }
 
   egress {
@@ -163,7 +163,7 @@ resource "aws_security_group" "SG-WindowsBackend" {
 
 #Grupo de seguridad para RDS MySQL
 resource "aws_security_group" "SG-BD" {
-  vpc_id = aws_vpc.vpc_oregon.id
+  vpc_id = aws_vpc.vpc_virginia.id
   name = "SG-BaseDeDatos"
   description = "Acceso a MySQL RDS mediante Windows Backend"
 
@@ -185,9 +185,9 @@ resource "aws_security_group" "SG-BD" {
 
 #Instancia Windows Backend con su grupo de seguridad
 resource "aws_instance" "instancia_WindowsBack" {
-  ami = "ami-005148a6a3abb558a"
+  ami = "ami-0c765d44cf1f25d26"
   instance_type = "t2.medium"
-  subnet_id = aws_subnet.subred_privada_oregon_Back.id
+  subnet_id = aws_subnet.subred_privada_virginia_Back.id
   key_name = "vockey"
   
   vpc_security_group_ids = [aws_security_group.SG-WindowsBackend.id]
@@ -198,18 +198,18 @@ resource "aws_instance" "instancia_WindowsBack" {
   }
 }
 
-#Instancia de Windows Web Oregon con su grupo de seguridad
-resource "aws_instance" "instancia_WebOregon" {
-  ami = "ami-005148a6a3abb558a"
+#Instancia de Windows Web Virginia con su grupo de seguridad
+resource "aws_instance" "instancia_WebVirginia" {
+  ami = "ami-0c765d44cf1f25d26"
   instance_type = "t2.medium"
-  subnet_id = aws_subnet.subred_publica_oregon_Web.id
+  subnet_id = aws_subnet.subred_publica_virginia_Web.id
   key_name = "vockey"
   
-  vpc_security_group_ids = [aws_security_group.SG-WebOregon.id]
+  vpc_security_group_ids = [aws_security_group.SG-WebVirginia.id]
   associate_public_ip_address = true
 
   tags = {
-    Name = "Windows Web Oregon - Proyect"
+    Name = "Windows Web Virginia - Proyect"
   }
 }
 
