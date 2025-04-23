@@ -26,10 +26,10 @@ resource "aws_vpc" "vpc_oregon" {
 
 #VPC Peering entre Virginia y Oregon
 resource "aws_vpc_peering_connection" "conexion_peering" {
-  provider = aws
-  vpc_id = aws_vpc.vpc_virginia.id
-  peer_vpc_id = aws_vpc.vpc_oregon.id
-  peer_region = "us-west-2"
+  vpc_id        = aws_vpc.vpc_virginia.id
+  peer_vpc_id   = aws_vpc.vpc_oregon.id
+  peer_region   = "us-west-2"
+  auto_accept   = false
 
   tags = {
     Name = "VPC Peering - Virginia&Oregon"
@@ -44,6 +44,7 @@ resource "aws_internet_gateway" "igw-virginia" {
     }
 }
 resource "aws_internet_gateway" "igw-oregon" {
+    provider = aws.oregon
     vpc_id = aws_vpc.vpc_oregon.id
     tags = {
       Name = "IGW Oregon - Proyect"
@@ -79,7 +80,7 @@ resource "aws_subnet" "subred_publica_oregon_Web" {
 resource "aws_subnet" "subred_privada_oregon_Back" {
   provider = aws.oregon
   vpc_id = aws_vpc.vpc_oregon.id
-  cidr_block = "10.10.0.0/24"
+  cidr_block = "10.1.2.0/24"
   availability_zone = "us-west-2b"
 
  tags = {
@@ -91,7 +92,7 @@ resource "aws_subnet" "subred_privada_oregon_Back" {
 resource "aws_subnet" "subred_privada_oregon_BD" {
   provider = aws.oregon
   vpc_id = aws_vpc.vpc_oregon.id
-  cidr_block = "10.10.1.0/24"
+  cidr_block = "10.1.3.0/24"
   availability_zone = "us-west-2c"
 
  tags = {
@@ -120,7 +121,7 @@ resource "aws_route_table" "tabla_rutas_virginia" {
 
   route{
     cidr_block = "10.1.0.0/16"
-    gateway_id = aws_vpc_peering_connection.conexion_peering.id
+    vpc_peering_connection_id = aws_vpc_peering_connection.conexion_peering.id
   }
 
   tags = {
@@ -139,7 +140,7 @@ resource "aws_route_table" "tabla_rutas_oregon" {
 
   route{
     cidr_block = "10.0.0.0/16"
-    gateway_id = aws_vpc_peering_connection.conexion_peering.id
+    vpc_peering_connection_id = aws_vpc_peering_connection.conexion_peering.id
   }
 
   tags = {
@@ -147,14 +148,17 @@ resource "aws_route_table" "tabla_rutas_oregon" {
   }
 }
 resource "aws_route_table_association" "privada_oregon_Backend" {
+  provider = aws.oregon
   subnet_id = aws_subnet.subred_privada_oregon_Back.id
   route_table_id = aws_route_table.tabla_rutas_oregon.id
 }
 resource "aws_route_table_association" "privada_oregon_BD" {
+  provider = aws.oregon
   subnet_id = aws_subnet.subred_privada_oregon_BD.id
   route_table_id = aws_route_table.tabla_rutas_oregon.id
 }
 resource "aws_route_table_association" "publica_oregon_Web" {
+  provider = aws.oregon
   subnet_id = aws_subnet.subred_publica_oregon_Web.id
   route_table_id = aws_route_table.tabla_rutas_oregon.id
 } 
@@ -199,6 +203,7 @@ resource "aws_security_group" "SG-WebVirginia" {
 }
 
 resource "aws_security_group" "SG-WebOregon" {
+  provider = aws.oregon
   vpc_id = aws_vpc.vpc_oregon.id
   name = "SG-Proyect-WebOregon"
   description = "Conexión al servidor Windows Web Oregon por RDP desde IPs especificas y acceso a HTTP/HTTPS por internet"
@@ -238,6 +243,7 @@ resource "aws_security_group" "SG-WebOregon" {
 
 #Grupo de seguridad para Windows Backend
 resource "aws_security_group" "SG-WindowsBackend" {
+  provider = aws.oregon
   vpc_id = aws_vpc.vpc_oregon.id
   name = "SG-WindowsBackend"
   description = "Acceso a Windows Backend desde instancias Web y acceso desde los servicios Web"
@@ -268,6 +274,7 @@ resource "aws_security_group" "SG-WindowsBackend" {
 
 #Grupo de seguridad para RDS MySQL
 resource "aws_security_group" "SG-BD" {
+  provider = aws.oregon
   vpc_id = aws_vpc.vpc_oregon.id
   name = "SG-BaseDeDatos"
   description = "Acceso a MySQL RDS mediante Windows Backend"
