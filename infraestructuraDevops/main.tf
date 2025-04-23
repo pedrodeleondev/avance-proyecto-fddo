@@ -96,7 +96,7 @@ resource "aws_route_table_association" "publica_virginia_Web" {
 resource "aws_security_group" "SG-WebVirginia" {
   vpc_id = aws_vpc.vpc_virginia.id
   name = "SG-Proyect-WebVirginia"
-  description = "Conexión al servidor Windows Web por RDP desde IPs especificas y acceso a HTTP/HTTPS por internet"
+  description = "Conexion al servidor Windows Web por RDP desde IPs especificas y acceso a HTTP/HTTPS por internet"
 
   #Trafico RDP desde IP de integrantes
   ingress {
