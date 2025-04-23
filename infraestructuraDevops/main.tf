@@ -142,7 +142,7 @@ resource "aws_security_group" "SG-WindowsBackend" {
     from_port = 3389
     to_port = 3389
     protocol = "tcp"
-    cidr_blocks = [format("%s/32", aws_instance.instancia_WebVirginia.private_ip), format("%s/32", aws_instance.instancia_WebOregon.private_ip)]
+    cidr_blocks = [format("%s/32", aws_instance.instancia_WebOregon.private_ip)]
   }
 
   #Trafico Web mediante grupo de seguridad de Servidores Web
@@ -150,7 +150,7 @@ resource "aws_security_group" "SG-WindowsBackend" {
     from_port = 5000
     to_port = 5000
     protocol = "tcp"
-    security_groups = [aws_security_group.SG-WebVirginia.id, aws_security_group.SG-WebOregon.id]
+    security_groups = [aws_security_group.SG-WebOregon.id]
   }
 
   egress {
