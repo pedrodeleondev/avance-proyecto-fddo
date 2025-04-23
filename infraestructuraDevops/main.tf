@@ -34,7 +34,7 @@ resource "aws_subnet" "subred_publica_oregon_Web" {
 #Subred Privada Oregon - Backend
 resource "aws_subnet" "subred_privada_oregon_Back" {
   vpc_id = aws_vpc.vpc_oregon.id
-  cidr_block = "10.1.2.0/24"
+  cidr_block = "10.0.1.0/24"
   availability_zone = "us-west-2b"
 
  tags = {
@@ -45,7 +45,7 @@ resource "aws_subnet" "subred_privada_oregon_Back" {
 #Subred Privada Oregon - Base de datos
 resource "aws_subnet" "subred_privada_oregon_BD" {
   vpc_id = aws_vpc.vpc_oregon.id
-  cidr_block = "10.1.3.0/24"
+  cidr_block = "10.0.2.0/24"
   availability_zone = "us-west-2c"
 
  tags = {
@@ -71,7 +71,7 @@ resource "aws_route_table" "tabla_rutas_oregon" {
   vpc_id = aws_vpc.vpc_oregon.id
 
   route{
-    cidr_block = "10.0.0.0/16"
+    cidr_block = "10.0.0.0/0"
     gateway_id = aws_internet_gateway.igw-oregon.id
   }
 
