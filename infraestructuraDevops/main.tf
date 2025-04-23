@@ -247,7 +247,7 @@ resource "aws_security_group" "SG-WindowsBackend" {
     from_port = 3389
     to_port = 3389
     protocol = "tcp"
-    cidr_blocks = [format("%s/32", aws_instance.LinuxWebVirginia.private_ip), format("%s/32", aws_instance.LinuxWebOregon.private_ip)]
+    cidr_blocks = [format("%s/32", aws_instance.instancia_LinuxWebVirginia.private_ip), format("%s/32", aws_instance.instancia_LinuxWebOregon.private_ip)]
   }
 
   #Trafico Web mediante grupo de seguridad de Servidores Web
