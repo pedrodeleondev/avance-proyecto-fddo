@@ -338,7 +338,7 @@ resource "aws_instance" "instancia_LinuxWebVirginia" {
 
 resource "aws_db_instance" "BD_MySQL" {
   provider = aws.oregon
-  identifier = "BaseDeDatos-Proyect-MySQL"
+  identifier = "bd-proyect-mysql"
   engine = "mysql"
   engine_version = "8.0"
   instance_class = "db.t3.micro"
