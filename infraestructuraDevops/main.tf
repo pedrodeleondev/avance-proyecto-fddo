@@ -3,7 +3,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
-#VPC Oregon
+#VPC Virginia
 resource "aws_vpc" "vpc_virginia" {
     cidr_block = "10.0.0.0/16"
     tags = {
@@ -15,11 +15,11 @@ resource "aws_vpc" "vpc_virginia" {
 resource "aws_internet_gateway" "igw-virginia" {
     vpc_id = aws_vpc.vpc_virginia.id
     tags = {
-      Name = "IGW Oregon - Proyecto"
+      Name = "IGW Virginia - Proyecto"
     }
 }
 
-#Subred Publica Oregon Web
+#Subred Publica Virginia Web
 resource "aws_subnet" "subred_publica_virginia_Web" {
   vpc_id = aws_vpc.vpc_virginia.id
   cidr_block = "10.0.0.0/24"
@@ -31,7 +31,7 @@ resource "aws_subnet" "subred_publica_virginia_Web" {
   }
 }
 
-#Subred Privada Oregon - Backend
+#Subred Privada Virginia - Backend
 resource "aws_subnet" "subred_privada_virginia_Back" {
   vpc_id = aws_vpc.vpc_virginia.id
   cidr_block = "10.0.1.0/24"
@@ -42,7 +42,7 @@ resource "aws_subnet" "subred_privada_virginia_Back" {
   }
 }
 
-#Subred Privada Oregon - Base de datos
+#Subred Privada Virginia - Base de datos
 resource "aws_subnet" "subred_privada_virginia_BD" {
   vpc_id = aws_vpc.vpc_virginia.id
   cidr_block = "10.0.2.0/24"
@@ -57,8 +57,8 @@ resource "aws_subnet" "subred_privada_virginia_BD" {
 resource "aws_db_subnet_group" "db_subnet_group" {
   name = "db-subnet-group"
   subnet_ids = [
-    aws_subnet.subred_privada_oregon_Back.id,
-    aws_subnet.subred_privada_oregon_BD.id
+    aws_subnet.subred_privada_virginia_Back.id,
+    aws_subnet.subred_privada_virginia_BD.id
   ]
 
   tags = {
@@ -66,13 +66,13 @@ resource "aws_db_subnet_group" "db_subnet_group" {
   }
 }
 
-#Tabla de rutas Oregon
+#Tabla de rutas Virginia
 resource "aws_route_table" "tabla_rutas_virginia" {
-  vpc_id = aws_vpc.vpc_oregon.id
+  vpc_id = aws_vpc.vpc_virginia.id
 
   route{
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw-oregon.id
+    gateway_id = aws_internet_gateway.igw-virginia.id
   }
 
   tags = {
