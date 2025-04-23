@@ -222,6 +222,7 @@ resource "aws_db_instance" "BD_MySQL" {
   storage_type = "gp2"
   username = "admin"
   password = "proyecto98765"
+  db_name = "proyecto_db"
   db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.SG-BD.id]
   multi_az = false
@@ -231,4 +232,22 @@ resource "aws_db_instance" "BD_MySQL" {
   tags = {
     Name = "RDS MySQL - Proyect"
   }
+}
+
+#Muestra de información
+output "rds_endpoint" {
+  description = "Endpoint DNS para conectar a la RDS"
+  value       = aws_db_instance.BD_MySQL.endpoint
+}
+output "rds_port" {
+  description = "Puerto de conexión de MySQL"
+  value       = aws_db_instance.BD_MySQL.port
+}
+output "rds_username" {
+  description = "Usuario administrador de MySQL"
+  value       = aws_db_instance.BD_MySQL.username
+}
+output "rds_database_name" {
+  description = "Nombre de la base de datos"
+  value       = aws_db_instance.BD_MySQL.db_name
 }
