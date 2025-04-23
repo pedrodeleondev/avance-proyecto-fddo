@@ -160,15 +160,15 @@ resource "aws_route_table_association" "publica_oregon_Web" {
 } 
 
 #Grupo de seguridad para Servidores Web Linux
-resource "aws_security_group" "SG-WebLinuxVirginia" {
+resource "aws_security_group" "SG-WebVirginia" {
   vpc_id = aws_vpc.vpc_virginia.id
-  name = "SG-Proyect-WebLinuxVirginia"
-  description = "Conexión al servidor Linux Web Virginia por SSH desde IPs especificas y acceso a HTTP/HTTPS por internet"
+  name = "SG-Proyect-WebVirginia"
+  description = "Conexión al servidor Windows Web Virginia por RDP desde IPs especificas y acceso a HTTP/HTTPS por internet"
 
-  #Trafico SSH desde IP de integrantes
+  #Trafico RDP desde IP de integrantes
   ingress {
-    from_port = 22
-    to_port = 22
+    from_port = 3389
+    to_port = 3389
     protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"] #TU IP al final de ella poner un "/32"
   }
@@ -198,15 +198,15 @@ resource "aws_security_group" "SG-WebLinuxVirginia" {
   }  
 }
 
-resource "aws_security_group" "SG-WebLinuxOregon" {
+resource "aws_security_group" "SG-WebOregon" {
   vpc_id = aws_vpc.vpc_oregon.id
-  name = "SG-Proyect-WebLinuxOregon"
-  description = "Conexión al servidor Linux Web Oregon por SSH desde IPs especificas y acceso a HTTP/HTTPS por internet"
+  name = "SG-Proyect-WebOregon"
+  description = "Conexión al servidor Windows Web Oregon por RDP desde IPs especificas y acceso a HTTP/HTTPS por internet"
 
-  #Trafico SSH desde IP de integrantes
+  #Trafico RDP desde IP de integrantes
   ingress {
-    from_port = 22
-    to_port = 22
+    from_port = 3389
+    to_port = 3389
     protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"] #TU IP al final de ella poner un "/32"
   }
@@ -247,7 +247,7 @@ resource "aws_security_group" "SG-WindowsBackend" {
     from_port = 3389
     to_port = 3389
     protocol = "tcp"
-    cidr_blocks = [format("%s/32", aws_instance.instancia_LinuxWebVirginia.private_ip), format("%s/32", aws_instance.instancia_LinuxWebOregon.private_ip)]
+    cidr_blocks = [format("%s/32", aws_instance.instancia_WebVirginia.private_ip), format("%s/32", aws_instance.instancia_WebOregon.private_ip)]
   }
 
   #Trafico Web mediante grupo de seguridad de Servidores Web
@@ -255,7 +255,7 @@ resource "aws_security_group" "SG-WindowsBackend" {
     from_port = 5000
     to_port = 5000
     protocol = "tcp"
-    security_groups = [aws_security_group.SG-WebLinuxVirginia.id, aws_security_group.SG-WebLinuxOregon.id]
+    security_groups = [aws_security_group.SG-WebVirginia.id, aws_security_group.SG-WebOregon.id]
   }
 
   egress {
@@ -304,35 +304,35 @@ resource "aws_instance" "instancia_WindowsBack" {
   }
 }
 
-#Instancia de Linux Web Oregon con su grupo de seguridad
-resource "aws_instance" "instancia_LinuxWebOregon" {
+#Instancia de Windows Web Oregon con su grupo de seguridad
+resource "aws_instance" "instancia_WebOregon" {
   provider = aws.oregon
-  ami = "ami-084568db4383264d4"
-  instance_type = "t2.micro"
+  ami = "ami-0c765d44cf1f25d26"
+  instance_type = "t2.medium"
   subnet_id = aws_subnet.subred_publica_oregon_Web.id
   key_name = "vockey"
   
-  vpc_security_group_ids = [aws_security_group.SG-WebLinuxOregon.id]
+  vpc_security_group_ids = [aws_security_group.SG-WebOregon.id]
   associate_public_ip_address = true
 
   tags = {
-    Name = "Linux Web Oregon - Proyect"
+    Name = "Windows Web Oregon - Proyect"
   }
 }
 
-#Instancia de Linux Web Virginia con su grupo de seguridad
-resource "aws_instance" "instancia_LinuxWebVirginia" {
+#Instancia de Windows Web Virginia con su grupo de seguridad
+resource "aws_instance" "instancia_WebVirginia" {
   provider = aws
-  ami = "ami-084568db4383264d4"
-  instance_type = "t2.micro"
+  ami = "ami-0c765d44cf1f25d26"
+  instance_type = "t2.medium"
   subnet_id = aws_subnet.subred_publica_virginia_Web.id
   key_name = "vockey"
   
-  vpc_security_group_ids = [aws_security_group.SG-WebLinuxVirginia.id]
+  vpc_security_group_ids = [aws_security_group.SG-WebVirginia.id]
   associate_public_ip_address = true
 
   tags = {
-    Name = "Linux Web Virginia - Proyect"
+    Name = "Windows Web Virginia - Proyect"
   }
 }
 
