@@ -1,10 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, request, jsonify
 import pymysql
-from urllib.parse import urlparse
 
 app = Flask(__name__)
 
-# ------- CONEXIÓN ----------
 def get_connection():
     return pymysql.connect(
         host="bd-proyect-mysql.cis9zqmovwyf.us-east-1.rds.amazonaws.com",
@@ -15,22 +13,21 @@ def get_connection():
         cursorclass=pymysql.cursors.DictCursor
     )
 
-# ---------- RUTAS ----------
-
-@app.route('/')
-def index():
+@app.route('/productos', methods=['GET'])
+def obtener_productos():
     conn = get_connection()
     with conn.cursor() as cursor:
         cursor.execute("SELECT * FROM productos")
         productos = cursor.fetchall()
     conn.close()
-    return render_template('index.html', productos=productos)
+    return jsonify(productos)
 
 @app.route('/agregar', methods=['POST'])
 def agregar():
-    nombre = request.form['nombre']
-    cantidad = request.form['cantidad']
-    precio = request.form['precio']
+    data = request.json
+    nombre = data['nombre']
+    cantidad = data['cantidad']
+    precio = data['precio']
     conn = get_connection()
     with conn.cursor() as cursor:
         cursor.execute(
@@ -39,13 +36,14 @@ def agregar():
         )
     conn.commit()
     conn.close()
-    return redirect(url_for('index'))
+    return jsonify({"mensaje": "Producto agregado"}), 201
 
-@app.route('/editar/<int:id>', methods=['POST'])
+@app.route('/editar/<int:id>', methods=['PUT'])
 def editar(id):
-    nombre = request.form['nombre']
-    cantidad = request.form['cantidad']
-    precio = request.form['precio']
+    data = request.json
+    nombre = data['nombre']
+    cantidad = data['cantidad']
+    precio = data['precio']
     conn = get_connection()
     with conn.cursor() as cursor:
         cursor.execute(
@@ -54,16 +52,16 @@ def editar(id):
         )
     conn.commit()
     conn.close()
-    return redirect(url_for('index'))
+    return jsonify({"mensaje": "Producto actualizado"})
 
-@app.route('/eliminar/<int:id>')
+@app.route('/eliminar/<int:id>', methods=['DELETE'])
 def eliminar(id):
     conn = get_connection()
     with conn.cursor() as cursor:
         cursor.execute("DELETE FROM productos WHERE id=%s", (id,))
     conn.commit()
     conn.close()
-    return redirect(url_for('index'))
+    return jsonify({"mensaje": "Producto eliminado"})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
