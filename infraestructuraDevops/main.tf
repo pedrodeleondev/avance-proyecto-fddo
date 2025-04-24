@@ -19,6 +19,14 @@ resource "aws_internet_gateway" "igw-virginia" {
     }
 }
 
+#Elastic IP para NAT Gateway
+resource "aws_eip" "nat_eip" {
+  vpc = true
+  tags = {
+    Name = "Elastic IP para NAT Gateway"
+  }
+}
+
 #Subred Publica Virginia Web
 resource "aws_subnet" "subred_publica_virginia_Web" {
   vpc_id = aws_vpc.vpc_virginia.id
@@ -28,6 +36,15 @@ resource "aws_subnet" "subred_publica_virginia_Web" {
 
   tags = {
     Name = "Subred Publica Web Virginia - Proyect"
+  }
+}
+
+#NAT Gateway
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = aws_subnet.subred_publica_virginia_Web.id
+  tags = {
+    Name = "NAT Gateway - Proyecto"
   }
 }
 
@@ -79,18 +96,36 @@ resource "aws_route_table" "tabla_rutas_virginia" {
     Name = "Tabla Rutas Virginia"
   }
 }
+
+#Tabla de rutas Privadas con NAT
+resource "aws_route_table" "tabla_rutas_privadas" {
+  vpc_id = aws_vpc.vpc_virginia.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat.id
+  }
+
+  tags = {
+    Name = "Tabla Rutas Privadas con NAT"
+  }
+}
+
+#Asociaciones de tabla de rutas
 resource "aws_route_table_association" "privada_virginia_Backend" {
   subnet_id = aws_subnet.subred_privada_virginia_Back.id
-  route_table_id = aws_route_table.tabla_rutas_virginia.id
+  route_table_id = aws_route_table.tabla_rutas_privadas.id
 }
+
 resource "aws_route_table_association" "privada_virginia_BD" {
   subnet_id = aws_subnet.subred_privada_virginia_BD.id
-  route_table_id = aws_route_table.tabla_rutas_virginia.id
+  route_table_id = aws_route_table.tabla_rutas_privadas.id
 }
+
 resource "aws_route_table_association" "publica_virginia_Web" {
   subnet_id = aws_subnet.subred_publica_virginia_Web.id
   route_table_id = aws_route_table.tabla_rutas_virginia.id
-} 
+}
 
 #Grupo de seguridad para Servidores Web Windows
 resource "aws_security_group" "SG-WebVirginia" {
@@ -98,15 +133,13 @@ resource "aws_security_group" "SG-WebVirginia" {
   name = "SG-Proyect-WebVirginia"
   description = "Conexion al servidor Windows Web por RDP desde IPs especificas y acceso a HTTP/HTTPS por internet"
 
-  #Trafico RDP desde IP de integrantes
   ingress {
     from_port = 3389
     to_port = 3389
     protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] #TU IP al final de ella poner un "/32"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
-  #Trafico HTTP desde cualquier IP
   ingress {
     from_port = 80
     to_port = 80
@@ -114,7 +147,6 @@ resource "aws_security_group" "SG-WebVirginia" {
     cidr_blocks = [ "0.0.0.0/0" ]
   }
 
-  #Trafico HTTPS desde cualquier IP
   ingress {
     from_port = 443
     to_port = 443
@@ -122,7 +154,6 @@ resource "aws_security_group" "SG-WebVirginia" {
     cidr_blocks = [ "0.0.0.0/0" ]
   }
 
-  #Salida a todo el trafico
   egress {
     from_port = 0
     to_port = 0
@@ -137,7 +168,6 @@ resource "aws_security_group" "SG-WindowsBackend" {
   name = "SG-WindowsBackend"
   description = "Acceso a Windows Backend desde instancias Web y acceso desde los servicios Web"
 
-  #Trafico RDP mediante IP de Windows Web
   ingress {
     from_port = 3389
     to_port = 3389
@@ -145,7 +175,6 @@ resource "aws_security_group" "SG-WindowsBackend" {
     cidr_blocks = [format("%s/32", aws_instance.instancia_WebVirginia.private_ip)]
   }
 
-  #Trafico Web mediante grupo de seguridad de Servidores Web
   ingress {
     from_port = 5000
     to_port = 5000
@@ -167,7 +196,6 @@ resource "aws_security_group" "SG-BD" {
   name = "SG-BaseDeDatos"
   description = "Acceso a MySQL RDS mediante Windows Backend"
 
-  #Trafico MySQL mediante Windows Backend
   ingress {
     from_port = 3306
     to_port = 3306
