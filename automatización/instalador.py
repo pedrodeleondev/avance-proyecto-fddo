@@ -2,6 +2,7 @@ import os
 import subprocess
 import shutil
 import platform
+import sys
 
 def run(cmd):
     print(f"Ejecutando: {cmd}")
@@ -48,10 +49,10 @@ def configurar_backend():
     ruta_launcher = os.path.join(destino, "iniciar_flask.py")
     with open(ruta_launcher, "w", encoding="utf-8") as f:
         f.write('''from app import app
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
 ''')
-    print(f"Backend configurado en {destino}")
+    print(f"✅ Backend configurado en {destino}")
     agregar_a_inicio(destino)
 
 def agregar_a_inicio(destino):
@@ -60,32 +61,39 @@ def agregar_a_inicio(destino):
     ruta_bat = os.path.join(ruta_inicio, "lanzar_backend.bat")
     with open(ruta_bat, "w") as f:
         f.write(f"@echo off\ncd /d {destino}\npython iniciar_flask.py")
-    print("Backend configurado para arrancar al iniciar Windows.")
+    print("🚀 Backend configurado para arrancar al iniciar Windows.")
 
 def configurar_frontend(ip_backend="10.0.1.39"):
-    if es_windows():
-        destino = r"C:\\inetpub\\wwwroot"
-        origen_html = os.path.join("avance-proyecto-fddo", "aplicacionWeb", "templates", "index.html")
-        origen_css = os.path.join("avance-proyecto-fddo", "aplicacionWeb", "static", "style.css")
-        if not os.path.exists(destino):
-            os.makedirs(destino)
+    if not es_windows():
+        print("Este script solo instala frontend en Windows con IIS.")
+        return
 
-        with open(origen_html, "r", encoding="utf-8") as f:
-            contenido = f.read().replace("http://[IP_BACKEND]:5000", f"http://{ip_backend}:5000")
-        with open(os.path.join(destino, "index.html"), "w", encoding="utf-8") as f:
-            f.write(contenido)
-        shutil.copy(origen_css, os.path.join(destino, "style.css"))
-        print(f"HTML y CSS copiados a {destino}")
-        print("Verifica que IIS esté activo en esta instancia.")
-    else:
-        print("Este script no instala frontend en Linux en esta versión.")
+    destino = r"C:\\inetpub\\wwwroot"
+    origen_html = os.path.join("avance-proyecto-fddo", "aplicacionWeb", "templates", "index.html")
+    origen_css = os.path.join("avance-proyecto-fddo", "aplicacionWeb", "static", "style.css")
+    if not os.path.exists(destino):
+        os.makedirs(destino)
+
+    with open(origen_html, "r", encoding="utf-8") as f:
+        contenido = f.read().replace("http://[IP_BACKEND]:5000", f"http://{ip_backend}:5000")
+    with open(os.path.join(destino, "index.html"), "w", encoding="utf-8") as f:
+        f.write(contenido)
+    shutil.copy(origen_css, os.path.join(destino, "style.css"))
+    print(f"✅ HTML y CSS copiados a {destino}")
+    print("🔗 Verifica que IIS esté activo en esta instancia.")
 
 if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("USO: python instalador.py frontend | backend")
+        exit(1)
+
+    modo = sys.argv[1].lower()
     clonar_repo()
     instalar_dependencias()
 
-    hostname = os.environ.get("COMPUTERNAME", "").lower()
-    if "web" in hostname:
-        configurar_frontend(ip_backend="10.0.1.39")
-    else:
+    if modo == "frontend":
+        configurar_frontend()
+    elif modo == "backend":
         configurar_backend()
+    else:
+        print("Modo inválido. Usa 'frontend' o 'backend'.")
