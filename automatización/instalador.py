@@ -48,8 +48,8 @@ def configurar_backend():
     ruta_launcher = os.path.join(destino, "iniciar_flask.py")
     with open(ruta_launcher, "w", encoding="utf-8") as f:
         f.write('''from app import app
-if _name_ == '_main_':
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
 ''')
     print(f"Backend configurado en {destino}")
     agregar_a_inicio(destino)
@@ -80,7 +80,7 @@ def configurar_frontend(ip_backend="10.0.1.39"):
     else:
         print("Este script no instala frontend en Linux en esta versión.")
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     clonar_repo()
     instalar_dependencias()
 
