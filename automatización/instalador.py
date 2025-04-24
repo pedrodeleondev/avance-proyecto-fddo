@@ -65,7 +65,7 @@ def agregar_a_inicio(destino):
         f.write(f"@echo off\ncd /d {destino}\npython iniciar_flask.py")
     print("Backend configurado para arrancar al iniciar Windows.")
 
-def configurar_frontend(ip_backend="10.0.1.39"):
+def configurar_frontend(ip_backend="10.0.1.237"):
     if not es_windows():
         print("Este script solo instala frontend en Windows con IIS.")
         return
