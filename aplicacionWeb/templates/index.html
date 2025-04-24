@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Avance del proyecto</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="style.css">
     <style>
         #formModal {
             display: none;
@@ -33,17 +33,7 @@
     <div class="contenedor">
         <div class="articulosDiv">
             <button id="agregar" onclick="abrirFormulario()">Agregar nuevo producto</button>
-            <ul id="articulosLista">
-                {% for p in productos %}
-                <li>
-                    <span class="articuloTxt"><b>ID:</b> {{ p.id }} - <b>Nombre:</b> {{ p.nombre }} - <b>Cantidad:</b>
-                        {{ p.cantidad }} - <b>Precio:</b> ${{ p.precio }}</span>
-                    <button id="editar"
-                        onclick="editarProducto({{ p.id }}, '{{ p.nombre }}', {{ p.cantidad }}, {{ p.precio }})">Editar</button>
-                    <a href="/eliminar/{{ p.id }}"><button id="eliminar">Eliminar</button></a>
-                </li>
-                {% endfor %}
-            </ul>
+            <ul id="articulosLista"></ul>
         </div>
         <span id="creditos">Avance de Proyecto por <b>Pedro De León, Paola Urdiales y Frida Garza</b></span>
     </div>
@@ -52,11 +42,11 @@
     <div id="formModal">
         <div id="formContainer">
             <h3 id="tituloModal">Agregar Producto</h3>
-            <form id="formProducto" method="POST" action="/agregar">
-                <input type="hidden" name="id" id="idProducto">
-                <label>Nombre:</label><input type="text" name="nombre" id="nombre" maxlength="25" required><br>
-                <label>Cantidad:</label><input type="number" name="cantidad" id="cantidad" min="1" max="99" required><br>
-                <label>Precio:</label><input type="number" step="0.01" name="precio" id="precio" min="1" max="99999" required><br><br>
+            <form id="formProducto" onsubmit="guardarProducto(event)">
+                <input type="hidden" id="idProducto">
+                <label>Nombre:</label><input type="text" id="nombre" maxlength="25" required><br>
+                <label>Cantidad:</label><input type="number" id="cantidad" min="1" max="99" required><br>
+                <label>Precio:</label><input type="number" step="0.01" id="precio" min="1" max="99999" required><br><br>
                 <div class="btns">
                     <button class="btnVerde btn" type="submit">Guardar</button>
                     <button class="btnRojo btn" type="button" onclick="cerrarFormulario()">Cancelar</button>
@@ -66,25 +56,89 @@
     </div>
 
     <script>
+        const API = "http://10.0.1.39:5000";
+
+        function cargarProductos() {
+            fetch(`${API}/productos`)
+                .then(res => res.json())
+                .then(data => {
+                    const lista = document.getElementById("articulosLista");
+                    lista.innerHTML = "";
+                    data.forEach(p => {
+                        const li = document.createElement("li");
+                        li.innerHTML = `
+                            <span class="articuloTxt"><b>ID:</b> ${p.id} - <b>Nombre:</b> ${p.nombre} - <b>Cantidad:</b> ${p.cantidad} - <b>Precio:</b> $${p.precio}</span>
+                            <button id="editar" onclick="editarProducto(${p.id}, '${p.nombre}', ${p.cantidad}, ${p.precio})">Editar</button>
+                            <button id="eliminar" onclick="eliminarProducto(${p.id})">Eliminar</button>
+                        `;
+                        lista.appendChild(li);
+                    });
+                });
+        }
+
         function abrirFormulario() {
-            document.getElementById('formProducto').action = "/agregar";
-            document.getElementById('tituloModal').innerText = "Agregar Producto";
-            document.getElementById('formProducto').reset();
-            document.getElementById('formModal').style.display = 'flex';
+            document.getElementById("formProducto").dataset.modo = "agregar";
+            document.getElementById("formProducto").reset();
+            document.getElementById("tituloModal").innerText = "Agregar Producto";
+            document.getElementById("formModal").style.display = 'flex';
         }
 
         function editarProducto(id, nombre, cantidad, precio) {
-            document.getElementById('formProducto').action = "/editar/" + id;
-            document.getElementById('tituloModal').innerText = "Editar Producto";
-            document.getElementById('nombre').value = nombre;
-            document.getElementById('cantidad').value = cantidad;
-            document.getElementById('precio').value = precio;
-            document.getElementById('formModal').style.display = 'flex';
+            document.getElementById("formProducto").dataset.modo = "editar";
+            document.getElementById("idProducto").value = id;
+            document.getElementById("nombre").value = nombre;
+            document.getElementById("cantidad").value = cantidad;
+            document.getElementById("precio").value = precio;
+            document.getElementById("tituloModal").innerText = "Editar Producto";
+            document.getElementById("formModal").style.display = 'flex';
         }
 
         function cerrarFormulario() {
-            document.getElementById('formModal').style.display = 'none';
+            document.getElementById("formModal").style.display = 'none';
         }
+
+        function guardarProducto(event) {
+            event.preventDefault();
+            const modo = document.getElementById("formProducto").dataset.modo;
+            const id = document.getElementById("idProducto").value;
+            const nombre = document.getElementById("nombre").value;
+            const cantidad = document.getElementById("cantidad").value;
+            const precio = document.getElementById("precio").value;
+
+            const datos = {
+                nombre,
+                cantidad,
+                precio
+            };
+
+            if (modo === "agregar") {
+                fetch(`${API}/agregar`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos)
+                }).then(() => {
+                    cerrarFormulario();
+                    cargarProductos();
+                });
+            } else {
+                fetch(`${API}/editar/${id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos)
+                }).then(() => {
+                    cerrarFormulario();
+                    cargarProductos();
+                });
+            }
+        }
+
+        function eliminarProducto(id) {
+            fetch(`${API}/eliminar/${id}`, {
+                method: "DELETE"
+            }).then(() => cargarProductos());
+        }
+
+        cargarProductos();
     </script>
 </body>
 
