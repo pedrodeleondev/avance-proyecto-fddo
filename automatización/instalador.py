@@ -52,8 +52,10 @@ def configurar_backend():
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
 ''')
-    print(f"✅ Backend configurado en {destino}")
+    print(f"Backend configurado en {destino}")
     agregar_a_inicio(destino)
+    # Ejecutar el servidor inmediatamente
+    run(f"start /min cmd /c \"cd /d {destino} && python iniciar_flask.py\"")
 
 def agregar_a_inicio(destino):
     ruta_inicio = os.path.join(os.environ["APPDATA"], "Microsoft\\Windows\\Start Menu\\Programs\\Startup")
@@ -61,7 +63,7 @@ def agregar_a_inicio(destino):
     ruta_bat = os.path.join(ruta_inicio, "lanzar_backend.bat")
     with open(ruta_bat, "w") as f:
         f.write(f"@echo off\ncd /d {destino}\npython iniciar_flask.py")
-    print("🚀 Backend configurado para arrancar al iniciar Windows.")
+    print("Backend configurado para arrancar al iniciar Windows.")
 
 def configurar_frontend(ip_backend="10.0.1.39"):
     if not es_windows():
@@ -79,8 +81,8 @@ def configurar_frontend(ip_backend="10.0.1.39"):
     with open(os.path.join(destino, "index.html"), "w", encoding="utf-8") as f:
         f.write(contenido)
     shutil.copy(origen_css, os.path.join(destino, "style.css"))
-    print(f"✅ HTML y CSS copiados a {destino}")
-    print("🔗 Verifica que IIS esté activo en esta instancia.")
+    print(f"HTML y CSS copiados a {destino}")
+    print("Verifica que IIS esté activo en esta instancia.")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
