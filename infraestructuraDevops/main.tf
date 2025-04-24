@@ -5,18 +5,18 @@ provider "aws" {
 
 #VPC Virginia
 resource "aws_vpc" "vpc_virginia" {
-    cidr_block = "10.0.0.0/16"
-    tags = {
-      Name = "VPC Virginia - Proyecto"
-    }
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "VPC Virginia - Proyecto"
+  }
 }
 
-#Gateway
+#Internet Gateway
 resource "aws_internet_gateway" "igw-virginia" {
-    vpc_id = aws_vpc.vpc_virginia.id
-    tags = {
-      Name = "IGW Virginia - Proyecto"
-    }
+  vpc_id = aws_vpc.vpc_virginia.id
+  tags = {
+    Name = "IGW Virginia - Proyecto"
+  }
 }
 
 #Elastic IP para NAT Gateway
@@ -27,13 +27,12 @@ resource "aws_eip" "nat_eip" {
   }
 }
 
-#Subred Publica Virginia Web
+#Subred Publica
 resource "aws_subnet" "subred_publica_virginia_Web" {
-  vpc_id = aws_vpc.vpc_virginia.id
-  cidr_block = "10.0.0.0/24"
-  availability_zone = "us-east-1a"
+  vpc_id                  = aws_vpc.vpc_virginia.id
+  cidr_block              = "10.0.0.0/24"
+  availability_zone       = "us-east-1a"
   map_public_ip_on_launch = true
-
   tags = {
     Name = "Subred Publica Web Virginia - Proyect"
   }
@@ -48,221 +47,198 @@ resource "aws_nat_gateway" "nat" {
   }
 }
 
-#Subred Privada Virginia - Backend
+#Subred Privada Backend
 resource "aws_subnet" "subred_privada_virginia_Back" {
-  vpc_id = aws_vpc.vpc_virginia.id
-  cidr_block = "10.0.1.0/24"
+  vpc_id            = aws_vpc.vpc_virginia.id
+  cidr_block        = "10.0.1.0/24"
   availability_zone = "us-east-1b"
-
- tags = {
+  tags = {
     Name = "Subred Privada Backend - Proyect"
   }
 }
 
-#Subred Privada Virginia - Base de datos
+#Subred Privada BD
 resource "aws_subnet" "subred_privada_virginia_BD" {
-  vpc_id = aws_vpc.vpc_virginia.id
-  cidr_block = "10.0.2.0/24"
+  vpc_id            = aws_vpc.vpc_virginia.id
+  cidr_block        = "10.0.2.0/24"
   availability_zone = "us-east-1c"
-
- tags = {
+  tags = {
     Name = "Subred Privada BD - Proyect"
   }
 }
 
 #Grupo de subred RDS
 resource "aws_db_subnet_group" "db_subnet_group" {
-  name = "db-subnet-group"
-  subnet_ids = [
-    aws_subnet.subred_privada_virginia_Back.id,
-    aws_subnet.subred_privada_virginia_BD.id
-  ]
-
+  name       = "db-subnet-group"
+  subnet_ids = [aws_subnet.subred_privada_virginia_Back.id, aws_subnet.subred_privada_virginia_BD.id]
   tags = {
     Name = "Grupo de subred BD - Proyect"
   }
 }
 
-#Tabla de rutas Virginia
+#Tabla de rutas Pública
 resource "aws_route_table" "tabla_rutas_virginia" {
   vpc_id = aws_vpc.vpc_virginia.id
-
-  route{
+  route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw-virginia.id
   }
-
   tags = {
     Name = "Tabla Rutas Virginia"
   }
 }
 
-#Tabla de rutas Privadas con NAT
+#Tabla de rutas Privadas
 resource "aws_route_table" "tabla_rutas_privadas" {
   vpc_id = aws_vpc.vpc_virginia.id
-
   route {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat.id
   }
-
   tags = {
     Name = "Tabla Rutas Privadas con NAT"
   }
 }
 
 #Asociaciones de tabla de rutas
+resource "aws_route_table_association" "publica_virginia_Web" {
+  subnet_id      = aws_subnet.subred_publica_virginia_Web.id
+  route_table_id = aws_route_table.tabla_rutas_virginia.id
+}
+
 resource "aws_route_table_association" "privada_virginia_Backend" {
-  subnet_id = aws_subnet.subred_privada_virginia_Back.id
+  subnet_id      = aws_subnet.subred_privada_virginia_Back.id
   route_table_id = aws_route_table.tabla_rutas_privadas.id
 }
 
 resource "aws_route_table_association" "privada_virginia_BD" {
-  subnet_id = aws_subnet.subred_privada_virginia_BD.id
+  subnet_id      = aws_subnet.subred_privada_virginia_BD.id
   route_table_id = aws_route_table.tabla_rutas_privadas.id
 }
 
-resource "aws_route_table_association" "publica_virginia_Web" {
-  subnet_id = aws_subnet.subred_publica_virginia_Web.id
-  route_table_id = aws_route_table.tabla_rutas_virginia.id
-}
-
-#Grupo de seguridad para Servidores Web Windows
+#Security Group Web
 resource "aws_security_group" "SG-WebVirginia" {
   vpc_id = aws_vpc.vpc_virginia.id
-  name = "SG-Proyect-WebVirginia"
-  description = "Conexion al servidor Windows Web por RDP desde IPs especificas y acceso a HTTP/HTTPS por internet"
+  name   = "SG-Proyect-WebVirginia"
 
   ingress {
-    from_port = 3389
-    to_port = 3389
-    protocol = "tcp"
+    from_port   = 3389
+    to_port     = 3389
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
   ingress {
-    from_port = 80
-    to_port = 80
-    protocol = "tcp"
-    cidr_blocks = [ "0.0.0.0/0" ]
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-
   ingress {
-    from_port = 443
-    to_port = 443
-    protocol = "tcp"
-    cidr_blocks = [ "0.0.0.0/0" ]
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-
   egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = [ "0.0.0.0/0" ]
-  }  
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
-#Grupo de seguridad para Windows Backend
+#Security Group Backend
 resource "aws_security_group" "SG-WindowsBackend" {
   vpc_id = aws_vpc.vpc_virginia.id
-  name = "SG-WindowsBackend"
-  description = "Acceso a Windows Backend desde instancias Web y acceso desde los servicios Web"
+  name   = "SG-WindowsBackend"
 
   ingress {
-    from_port = 3389
-    to_port = 3389
-    protocol = "tcp"
+    from_port   = 3389
+    to_port     = 3389
+    protocol    = "tcp"
     cidr_blocks = [format("%s/32", aws_instance.instancia_WebVirginia.private_ip)]
   }
-
   ingress {
-    from_port = 5000
-    to_port = 5000
-    protocol = "tcp"
+    from_port       = 5000
+    to_port         = 5000
+    protocol        = "tcp"
     security_groups = [aws_security_group.SG-WebVirginia.id]
   }
-
   egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
-#Grupo de seguridad para RDS MySQL
+#Security Group BD
 resource "aws_security_group" "SG-BD" {
   vpc_id = aws_vpc.vpc_virginia.id
-  name = "SG-BaseDeDatos"
-  description = "Acceso a MySQL RDS mediante Windows Backend"
+  name   = "SG-BaseDeDatos"
 
   ingress {
-    from_port = 3306
-    to_port = 3306
-    protocol = "tcp"
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
     cidr_blocks = [format("%s/32", aws_instance.instancia_WindowsBack.private_ip)]
   }
-
   egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
-#Instancia Windows Backend con su grupo de seguridad
+#Instancia Backend
 resource "aws_instance" "instancia_WindowsBack" {
-  ami = "ami-0c765d44cf1f25d26"
-  instance_type = "t2.medium"
-  subnet_id = aws_subnet.subred_privada_virginia_Back.id
-  key_name = "vockey"
-  
-  vpc_security_group_ids = [aws_security_group.SG-WindowsBackend.id]
-  associate_public_ip_address = false 
-
+  ami                         = "ami-0c765d44cf1f25d26"
+  instance_type               = "t2.medium"
+  subnet_id                   = aws_subnet.subred_privada_virginia_Back.id
+  key_name                    = "vockey"
+  vpc_security_group_ids      = [aws_security_group.SG-WindowsBackend.id]
+  associate_public_ip_address = false
   tags = {
     Name = "Windows Backend - Proyect"
   }
 }
 
-#Instancia de Windows Web Virginia con su grupo de seguridad
+#Instancia Web
 resource "aws_instance" "instancia_WebVirginia" {
-  ami = "ami-0c765d44cf1f25d26"
-  instance_type = "t2.medium"
-  subnet_id = aws_subnet.subred_publica_virginia_Web.id
-  key_name = "vockey"
-  
-  vpc_security_group_ids = [aws_security_group.SG-WebVirginia.id]
+  ami                         = "ami-0c765d44cf1f25d26"
+  instance_type               = "t2.medium"
+  subnet_id                   = aws_subnet.subred_publica_virginia_Web.id
+  key_name                    = "vockey"
+  vpc_security_group_ids      = [aws_security_group.SG-WebVirginia.id]
   associate_public_ip_address = true
-
   tags = {
     Name = "Windows Web Virginia - Proyect"
   }
 }
 
+#Base de Datos
 resource "aws_db_instance" "BD_MySQL" {
-  identifier = "bd-proyect-mysql"
-  engine = "mysql"
-  engine_version = "8.0"
-  instance_class = "db.t3.micro"
-  allocated_storage = 20
-  storage_type = "gp2"
-  username = "admin"
-  password = "proyecto98765"
-  db_name = "proyecto_db"
-  db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name
-  vpc_security_group_ids = [aws_security_group.SG-BD.id]
-  multi_az = false
-  publicly_accessible = false
-  skip_final_snapshot = true
-
+  identifier              = "bd-proyect-mysql"
+  engine                  = "mysql"
+  engine_version          = "8.0"
+  instance_class          = "db.t3.micro"
+  allocated_storage       = 20
+  storage_type            = "gp2"
+  username                = "admin"
+  password                = "proyecto98765"
+  db_name                 = "proyecto_db"
+  db_subnet_group_name    = aws_db_subnet_group.db_subnet_group.name
+  vpc_security_group_ids  = [aws_security_group.SG-BD.id]
+  multi_az                = false
+  publicly_accessible     = false
+  skip_final_snapshot     = true
   tags = {
     Name = "RDS MySQL - Proyect"
   }
 }
 
-#Muestra de información
+#Outputs
 output "rds_endpoint" {
   description = "Endpoint DNS para conectar a la RDS"
   value       = aws_db_instance.BD_MySQL.endpoint
