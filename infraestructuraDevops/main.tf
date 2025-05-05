@@ -122,8 +122,8 @@ resource "aws_security_group" "SG-WebVirginia" {
   name   = "SG-Proyect-WebVirginia"
 
   ingress {
-    from_port   = 3389
-    to_port     = 3389
+    from_port   = 22
+    to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -153,8 +153,8 @@ resource "aws_security_group" "SG-LinuxBackend" {
   name   = "SG-LinuxBackend"
 
   ingress {
-    from_port   = 3389
-    to_port     = 3389
+    from_port   = 22
+    to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [format("%s/32", aws_instance.instancia_WebVirginia.private_ip)]
   }
