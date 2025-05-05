@@ -148,9 +148,9 @@ resource "aws_security_group" "SG-WebVirginia" {
 }
 
 #Security Group Backend
-resource "aws_security_group" "SG-WindowsBackend" {
+resource "aws_security_group" "SG-LinuxBackend" {
   vpc_id = aws_vpc.vpc_virginia.id
-  name   = "SG-WindowsBackend"
+  name   = "SG-LinuxBackend"
 
   ingress {
     from_port   = 3389
@@ -181,7 +181,7 @@ resource "aws_security_group" "SG-BD" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = [format("%s/32", aws_instance.instancia_WindowsBack.private_ip)]
+    cidr_blocks = [format("%s/32", aws_instance.instancia_LinuxBack.private_ip)]
   }
   egress {
     from_port   = 0
@@ -192,28 +192,28 @@ resource "aws_security_group" "SG-BD" {
 }
 
 #Instancia Backend
-resource "aws_instance" "instancia_WindowsBack" {
-  ami                         = "ami-0c765d44cf1f25d26"
-  instance_type               = "t2.medium"
+resource "aws_instance" "instancia_LinuxBack" {
+  ami                         = "ami-0f88e80871fd81e91"
+  instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.subred_privada_virginia_Back.id
   key_name                    = "vockey"
-  vpc_security_group_ids      = [aws_security_group.SG-WindowsBackend.id]
+  vpc_security_group_ids      = [aws_security_group.SG-LinuxBackend.id]
   associate_public_ip_address = false
   tags = {
-    Name = "Windows Backend - Proyect"
+    Name = "Linux Backend - Proyect"
   }
 }
 
 #Instancia Web
 resource "aws_instance" "instancia_WebVirginia" {
-  ami                         = "ami-0c765d44cf1f25d26"
-  instance_type               = "t2.medium"
+  ami                         = "ami-0f88e80871fd81e91"
+  instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.subred_publica_virginia_Web.id
   key_name                    = "vockey"
   vpc_security_group_ids      = [aws_security_group.SG-WebVirginia.id]
   associate_public_ip_address = true
   tags = {
-    Name = "Windows Web Virginia - Proyect"
+    Name = "Linux Web Virginia - Proyect"
   }
 }
 
